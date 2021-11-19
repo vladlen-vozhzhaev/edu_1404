@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
@@ -20,7 +17,9 @@ public class Main {
                     result="";
                     String ip = ipAndPort[0];
                     int port = Integer.parseInt(ipAndPort[1]);
-                    checkProxy(ip, port);
+                    //checkProxy(ip, port);
+                    CheckProxyThread thread = new CheckProxyThread(ip, port);
+                    thread.start();
                 }else if(i == 9){ // Код 9 (табуляция)
                     result += ":";
                 }else{
@@ -31,8 +30,18 @@ public class Main {
             e.printStackTrace();
         }
     }
-    public static void checkProxy(String ip, int port){
-        System.out.println("Проверяю "+ip+":"+port);
+}
+
+class CheckProxyThread extends Thread{
+    String ip;
+    int port;
+
+    public CheckProxyThread(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
+    }
+    @Override
+    public void run(){
         try {
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
             URL url = new URL("https://vozhzhaev.ru/test.php");
@@ -45,6 +54,11 @@ public class Main {
             while ((inputLine = in.readLine()) != null)
                 System.out.println(inputLine+" - работает");
 
+            FileOutputStream fos = new FileOutputStream("C:\\java\\good_ip.txt", true);
+            byte[] buffer = (ip+":"+port+"\n").getBytes();
+            fos.write(buffer);
+            fos.flush();
+            fos.close();
         } catch (Exception e) {
             System.out.println(ip+" не работает");
         }
